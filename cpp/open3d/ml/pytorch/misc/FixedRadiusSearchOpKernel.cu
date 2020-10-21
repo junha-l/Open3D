@@ -91,6 +91,24 @@ void FixedRadiusSearchCUDA(const torch::Tensor& points,
 
     neighbors_index = output_allocator.NeighborsIndex();
     neighbors_distance = output_allocator.NeighborsDistance();
+
+    std::vector<int64_t> source;
+    auto numel = neighbors_row_splits.numel();
+    torch::Tensor slice0 = neighbors_row_splits.slice(0, 0, -1, 1);
+    torch::Tensor slice1 = neighbors_row_splits.slice(0, 1, numel, 1);
+    torch::Tensor diffs = slice1 - slice0;
+    for (int i = 0; i < diffs.numel(); ++i) {
+        int64_t diff = diffs[i].item<int64_t>();
+        for (int j = 0; j < diff; ++j) {
+            source.push_back(i);
+        }
+    }
+    torch::Tensor sources =
+            torch::from_blob(source.data(), {(int64_t)source.size()},
+                             torch::dtype(ToTorchDtype<int64_t>()))
+                    .to(neighbors_index.device());
+    torch::Tensor pairs = torch::stack({sources, neighbors_index}, 1);
+    neighbors_index = pairs;
 }
 
 #define INSTANTIATE(T)                                                        \

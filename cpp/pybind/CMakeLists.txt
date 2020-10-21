@@ -160,14 +160,14 @@ endif ()
 
 if ( BUNDLE_OPEN3D_ML )
 
-    find_path(
-        OPEN3D_ML_ROOT
-        NAMES set_open3d_ml_root.sh
-        HINTS $ENV{OPEN3D_ML_ROOT}
-        DOC "Path to the Open3D-ML repo. This should be set if BUNDLE_OPEN3D_ML is enabled. Alternatively set an env var with the same name to populate this var."
-        REQUIRED
-        NO_DEFAULT_PATH
-    )
+    #find_path(
+    #    OPEN3D_ML_ROOT
+    #    NAMES set_open3d_ml_root.sh
+    #    HINTS $ENV{OPEN3D_ML_ROOT}
+    #    DOC "Path to the Open3D-ML repo. This should be set if BUNDLE_OPEN3D_ML is enabled. Alternatively set an env var with the same name to populate this var."
+    #    REQUIRED
+    #    NO_DEFAULT_PATH
+    #)
 
     ExternalProject_Add(
         open3d_ml
