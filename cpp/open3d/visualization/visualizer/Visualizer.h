@@ -52,6 +52,7 @@ namespace open3d {
 namespace geometry {
 class TriangleMesh;
 class Image;
+class PointCloud;
 }  // namespace geometry
 
 namespace visualization {
@@ -218,6 +219,7 @@ public:
     void CaptureDepthImage(const std::string &filename = "",
                            bool do_render = true,
                            double depth_scale = 1000.0);
+
     /// \brief Function to capture and save local point cloud.
     ///
     /// \param filename Path to file.
@@ -227,6 +229,15 @@ public:
     void CaptureDepthPointCloud(const std::string &filename = "",
                                 bool do_render = true,
                                 bool convert_to_world_coordinate = false);
+
+    /// Function to capture depth point cloud in a buffer.
+    ///
+    /// \param do_render Set to `true` to do render.
+    /// \param convert_to_world_coordinate Set to `true` to convert to world
+    /// coordinates.
+    std::shared_ptr<geometry::PointCloud> CaptureDepthPointCloud(
+            bool do_render = true, bool convert_to_world_coordinate = false);
+
     void CaptureRenderOption(const std::string &filename = "");
     /// Function to reset view point.
     void ResetViewPoint(bool reset_bounding_box = false);

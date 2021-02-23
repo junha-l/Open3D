@@ -27,6 +27,7 @@
 #include "open3d/visualization/visualizer/Visualizer.h"
 
 #include "open3d/geometry/Image.h"
+#include "open3d/geometry/PointCloud.h"
 #include "open3d/visualization/visualizer/VisualizerWithEditing.h"
 #include "open3d/visualization/visualizer/VisualizerWithKeyCallback.h"
 #include "open3d/visualization/visualizer/VisualizerWithVertexSelection.h"
@@ -132,10 +133,25 @@ void pybind_visualizer(py::module &m) {
             .def("capture_depth_image", &Visualizer::CaptureDepthImage,
                  "Function to capture and save a depth image", "filename"_a,
                  "do_render"_a = false, "depth_scale"_a = 1000.0)
-            .def("capture_depth_point_cloud",
-                 &Visualizer::CaptureDepthPointCloud,
-                 "Function to capture and save local point cloud", "filename"_a,
-                 "do_render"_a = false, "convert_to_world_coordinate"_a = false)
+            .def(
+                    "capture_depth_point_cloud",
+                    [](Visualizer &self, std::string filename, bool do_render,
+                       bool convert_to_world_coordinate) {
+                        self.CaptureDepthPointCloud(
+                                filename, do_render,
+                                convert_to_world_coordinate);
+                    },
+                    py::arg("filename"), py::arg("do_render"),
+                    py::arg("convert_to_world_coordinate"))
+            .def(
+                    "capture_depth_point_cloud_buffer",
+                    [](Visualizer &self, bool do_render,
+                       bool convert_to_world_coordinate) {
+                        return self.CaptureDepthPointCloud(
+                                do_render, convert_to_world_coordinate);
+                    },
+                    py::arg("do_render"),
+                    py::arg("convert_to_world_coordinate"))
             .def("get_window_name", &Visualizer::GetWindowName);
 
     py::class_<VisualizerWithKeyCallback,
@@ -236,6 +252,9 @@ void pybind_visualizer(py::module &m) {
                                     map_visualizer_docstrings);
     docstring::ClassMethodDocInject(m, "Visualizer",
                                     "capture_depth_point_cloud",
+                                    map_visualizer_docstrings);
+    docstring::ClassMethodDocInject(m, "Visualizer",
+                                    "capture_depth_point_cloud_buffer",
                                     map_visualizer_docstrings);
     docstring::ClassMethodDocInject(m, "Visualizer",
                                     "capture_screen_float_buffer",

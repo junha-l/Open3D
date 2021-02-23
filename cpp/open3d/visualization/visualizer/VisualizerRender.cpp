@@ -438,6 +438,24 @@ void Visualizer::CaptureDepthPointCloud(
         ply_filename = "DepthCapture_" + timestamp + ".ply";
         camera_filename = "DepthCamera_" + timestamp + ".json";
     }
+
+    auto pointcloud_ptr =
+            CaptureDepthPointCloud(do_render, convert_to_world_coordinate);
+
+    utility::LogDebug("[Visualizer] Depth point cloud capture to {}",
+                      ply_filename.c_str());
+    io::WritePointCloud(ply_filename, *pointcloud_ptr);
+    if (!camera_filename.empty()) {
+        utility::LogDebug("[Visualizer] Depth camera capture to {}",
+                          camera_filename.c_str());
+        camera::PinholeCameraParameters parameter;
+        view_control_ptr_->ConvertToPinholeCameraParameters(parameter);
+        io::WriteIJsonConvertible(camera_filename, parameter);
+    }
+}
+
+std::shared_ptr<geometry::PointCloud> Visualizer::CaptureDepthPointCloud(
+        bool do_render, bool convert_to_world_coordinate) {
     geometry::Image depth_image;
     depth_image.Prepare(view_control_ptr_->GetWindowWidth(),
                         view_control_ptr_->GetWindowHeight(), 1, 4);
@@ -482,7 +500,7 @@ void Visualizer::CaptureDepthPointCloud(
 
     // glReadPixels get the screen in a vertically flipped manner
     // We should flip it back, and convert it to the correct depth value
-    geometry::PointCloud depth_pointcloud;
+    auto pointcloud_ptr = std::make_shared<geometry::PointCloud>();
     for (int i = 0; i < depth_image.height_; i++) {
         float *p_depth = (float *)(depth_image.data_.data() +
                                    depth_image.BytesPerLine() * i);
@@ -490,23 +508,14 @@ void Visualizer::CaptureDepthPointCloud(
             if (p_depth[j] == 1.0) {
                 continue;
             }
-            depth_pointcloud.points_.push_back(gl_util::Unproject(
+            pointcloud_ptr->points_.push_back(gl_util::Unproject(
                     Eigen::Vector3d(j + 0.5, i + 0.5, p_depth[j]), mvp_matrix,
                     view_control_ptr_->GetWindowWidth(),
                     view_control_ptr_->GetWindowHeight()));
         }
     }
 
-    utility::LogDebug("[Visualizer] Depth point cloud capture to {}",
-                      ply_filename.c_str());
-    io::WritePointCloud(ply_filename, depth_pointcloud);
-    if (!camera_filename.empty()) {
-        utility::LogDebug("[Visualizer] Depth camera capture to {}",
-                          camera_filename.c_str());
-        camera::PinholeCameraParameters parameter;
-        view_control_ptr_->ConvertToPinholeCameraParameters(parameter);
-        io::WriteIJsonConvertible(camera_filename, parameter);
-    }
+    return pointcloud_ptr;
 }
 
 void Visualizer::CaptureRenderOption(const std::string &filename /* = ""*/) {
